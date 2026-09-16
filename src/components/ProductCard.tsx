@@ -131,7 +131,7 @@ export function ProductCard({
       <div className="mt-3 flex flex-col gap-1.5">
         <div className="flex items-baseline justify-between gap-3">
           <h3 className="font-condensed text-[0.9375rem] leading-tight font-600 tracking-wide text-chalk-100 uppercase">
-            <button type="button" onClick={() => onOpen?.(product)} className="cursor-pointer text-left uppercase hover:text-chalk-50">
+            <button type="button" onClick={() => onOpen?.(product)} className="-my-1 cursor-pointer py-1 text-left uppercase hover:text-chalk-50">
               {product.name}
             </button>
           </h3>
@@ -150,7 +150,7 @@ export function ProductCard({
               aria-label={c.name}
               aria-pressed={i === colorIndex}
               className={cn(
-                'size-6 cursor-pointer rounded-full border transition-transform',
+                'size-7 cursor-pointer rounded-full border transition-transform',
                 i === colorIndex
                   ? 'scale-110 border-chalk-50'
                   : 'border-chalk-100/25 hover:border-chalk-100/60',

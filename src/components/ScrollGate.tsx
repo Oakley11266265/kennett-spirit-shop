@@ -110,7 +110,8 @@ export function ScrollGate({ onUnlock }: { onUnlock: (unlocked: boolean) => void
         };
         img.onerror = () => {
           done += 1;
-          if (!cancelled && done > FRAME_COUNT * 0.5 && !imagesRef.current[0]) setFailed(true);
+          // one bad frame is survivable; a missing first frame is not
+          if (!cancelled && i === 0) setFailed(true);
           resolve();
         };
         img.src = frameUrl(tier, i);
@@ -263,16 +264,18 @@ export function ScrollGate({ onUnlock }: { onUnlock: (unlocked: boolean) => void
       className="relative h-[320svh] bg-ink-950 md:h-[360svh]"
     >
       <div className="sticky top-0 grid h-svh w-full place-items-center overflow-hidden">
-        {/* fallback poster sits underneath in case frames never arrive */}
-        <img
-          src={`${BASE}hero/poster.jpg`}
-          alt=""
-          aria-hidden="true"
-          className={cn(
-            'absolute inset-0 h-full w-full object-cover transition-opacity duration-500',
-            ready && !failed ? 'opacity-0' : 'opacity-100',
-          )}
-        />
+        {/* The poster is a genuine fallback, so it is only fetched when the
+            frame sequence actually fails. Frame 1 is preloaded and paints in
+            under half a second; until then the dark ground is the right
+            opening image anyway, and loading both wastes ~190KB on a phone. */}
+        {failed && (
+          <img
+            src={`${BASE}hero/poster.jpg`}
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        )}
         <canvas
           ref={canvasRef}
           aria-hidden="true"

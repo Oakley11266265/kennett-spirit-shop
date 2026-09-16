@@ -40,7 +40,7 @@ export function Nav({
     >
       <nav className="shell flex h-16 items-center justify-between gap-3">
         <a href="#top" className="flex items-center gap-2.5">
-          <span className="grid size-9 place-items-center rounded-sm bg-demon-600 font-display text-lg text-white">
+          <span className="grid size-10 place-items-center rounded-sm bg-demon-600 font-display text-xl text-white">
             K
           </span>
           <span className="hidden leading-none sm:block">
