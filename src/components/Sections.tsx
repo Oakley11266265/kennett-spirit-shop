@@ -4,7 +4,7 @@ import { ArrowRight, ArrowUpRight, Camera, ChevronLeft, ChevronRight } from 'luc
 
 import { Garment, type MarkStyle } from '@/components/Garment';
 import { ProductCard } from '@/components/ProductCard';
-import { brands, fits, getProduct, marks, moments, products, type Product } from '@/data/catalog';
+import { brands, fits, marks, moments, products, resolveFit, type Product } from '@/data/catalog';
 import { cn, formatPrice } from '@/lib/utils';
 
 /* Shared reveal — one motion idea reused everywhere, so the page feels authored. */
@@ -55,8 +55,9 @@ export function GameDayFits({ onAdd }: { onAdd: (p: Product) => void }) {
 
       <div className="rail-scroll flex gap-4 px-5 pb-4">
         {fits.map((fit) => {
-          const items = fit.itemIds.map(getProduct).filter(Boolean) as Product[];
-          const total = items.reduce((sum, i) => sum + i.priceCents, 0);
+          const items = resolveFit(fit);
+          const total = items.reduce((sum, i) => sum + (i.priceCents ?? 0), 0);
+          if (!items.length) return null;
           return (
             <motion.article
               {...reveal}
@@ -90,7 +91,9 @@ export function GameDayFits({ onAdd }: { onAdd: (p: Product) => void }) {
                   {items.map((item) => (
                     <li key={item.id} className="flex justify-between text-[0.8125rem] text-chalk-200">
                       <span className="truncate pr-3">{item.name}</span>
-                      <span className="shrink-0 text-steel-400">{formatPrice(item.priceCents)}</span>
+                      <span className="shrink-0 text-steel-400">
+                        {item.priceCents != null ? formatPrice(item.priceCents) : "—"}
+                      </span>
                     </li>
                   ))}
                 </ul>
@@ -223,6 +226,7 @@ export function ChooseYourK() {
 
 /* ========================= BRANDS ========================= */
 export function BrandRail() {
+  if (!brands.length) return null;
   return (
     <section id="brands" className="border-y border-chalk-100/8 bg-ink-950 py-14">
       <p className="type-eyebrow mb-6 px-5 text-steel-500">Premium brands. Same pride.</p>

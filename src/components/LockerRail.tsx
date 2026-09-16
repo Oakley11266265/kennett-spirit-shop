@@ -2,8 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 
-import { Garment } from '@/components/Garment';
-import { ShipBadge } from '@/components/ProductCard';
+import { ProductImage, ShipBadge } from '@/components/ProductCard';
 import { lockerCategories, products, type Product } from '@/data/catalog';
 import { cn, formatPrice } from '@/lib/utils';
 
@@ -172,7 +171,7 @@ export function LockerRail() {
                     )}
                   >
                     <div className="aspect-4/5">
-                      <Garment type={p.type} colorway={p.colorways[0]} />
+                      <ProductImage product={p} colorway={p.colorways[0]} fit="contain" />
                     </div>
 
                     {/* Details appear for the centred garment only — the rail stays calm */}
@@ -186,7 +185,8 @@ export function LockerRail() {
                         {p.name}
                       </h3>
                       <p className="mt-0.5 text-sm text-chalk-200">
-                        {formatPrice(p.priceCents)} <span className="text-steel-500">· {p.brand}</span>
+                        {p.priceCents != null && formatPrice(p.priceCents)}
+                        {p.brand && <span className="text-steel-500"> · {p.brand}</span>}
                       </p>
                       <div className="mt-2 flex items-center justify-center gap-1.5">
                         {p.colorways.map((c) => (

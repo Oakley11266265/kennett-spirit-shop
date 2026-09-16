@@ -1,161 +1,78 @@
 /* ============================================================================
-   CATALOG — DATA CONTRACT
+   CATALOG — types, colour mapping and curation
    ----------------------------------------------------------------------------
-   !! IMPORTANT !!
-   Everything below is PLACEHOLDER structure, not Kennett's real BSN catalog.
-   The live BSN Sideline store could not be reached from the build environment
-   (blocked by network egress policy), so no real product names, prices, SKUs
-   or photography have been imported yet.
-
-   This file is the single swap point. Replace `products` with the scraped
-   BSN feed and the entire storefront renders real merchandise — no component
-   changes required. Shapes are modeled on what BSN Sideline actually exposes.
+   Product records live in ./products.generated.ts, which the BSN importer
+   overwrites. Nothing in this file needs to change when real data lands:
+   curation (moments, rails, fits) is expressed as RULES that resolve against
+   whatever catalog is present, so Game Day Fits keeps working with real SKUs.
    ========================================================================== */
 
-export const CATALOG_IS_PLACEHOLDER = true;
+import { CATALOG_SOURCE, CATALOG_STORE_URL, generatedProducts } from './products.generated';
+
+export { CATALOG_SOURCE, CATALOG_STORE_URL };
+export const CATALOG_IS_PLACEHOLDER = CATALOG_SOURCE === 'placeholder';
 
 export type GarmentType = 'hoodie' | 'tee' | 'crew' | 'jacket' | 'cap' | 'longsleeve' | 'short';
 
-export type Colorway = {
-  name: string;
-  /** garment body color */
-  body: string;
-  /** printed/embroidered mark color */
-  mark: string;
-};
+/** Fulfillment is only asserted when BSN actually stated it. */
+export type Fulfillment = 'stock' | 'made-to-order' | 'unknown';
 
-export type Product = {
+export type Colorway = { name: string; body: string; mark: string };
+
+/** The shape the importer writes. */
+export type RawProduct = {
   id: string;
   name: string;
-  brand: string;
-  priceCents: number;
+  brand?: string | null;
+  priceCents: number | null;
   type: GarmentType;
-  colorways: Colorway[];
+  colorNames?: string[];
   categories: string[];
-  /** BSN fulfillment reality: stocked items ship fast, decorated items are made to order */
-  fulfillment: 'stock' | 'made-to-order';
+  fulfillment: Fulfillment;
   badge?: string;
-  /** Real product photography drops in here from the BSN feed. */
-  image?: string;
-  /** Deep link into the BSN product page for checkout handoff. */
-  bsnUrl?: string;
+  /** Real BSN product photography, when imported. */
+  image?: string | null;
+  /** Deep link to the BSN product page — where checkout actually happens. */
+  bsnUrl?: string | null;
 };
 
-const ROYAL: Colorway = { name: 'Royal', body: '#1b4ac6', mark: '#ffffff' };
-const NAVY: Colorway = { name: 'Navy', body: '#001854', mark: '#ffffff' };
-const WHITE: Colorway = { name: 'White', body: '#f2f5fa', mark: '#001854' };
-const HEATHER: Colorway = { name: 'Heather', body: '#b8c1d1', mark: '#001854' };
-const CHARCOAL: Colorway = { name: 'Charcoal', body: '#333d52', mark: '#ffffff' };
-const BLACK: Colorway = { name: 'Black', body: '#10131c', mark: '#ffffff' };
+export type Product = Omit<RawProduct, 'colorNames'> & { colorways: Colorway[] };
 
-export const products: Product[] = [
-  {
-    id: 'p-classic-hoodie',
-    name: 'Classic Arch Hoodie',
-    brand: 'Champion',
-    priceCents: 5500,
-    type: 'hoodie',
-    colorways: [HEATHER, NAVY, ROYAL, BLACK],
-    categories: ['hoodies', 'everyday', 'best-sellers'],
-    fulfillment: 'made-to-order',
-    badge: 'BEST SELLER',
-  },
-  {
-    id: 'p-demon-tee',
-    name: 'Blue Demon Mark Tee',
-    brand: 'Nike',
-    priceCents: 3000,
-    type: 'tee',
-    colorways: [WHITE, NAVY, ROYAL],
-    categories: ['tees', 'everyday', 'under-35'],
-    fulfillment: 'stock',
-  },
-  {
-    id: 'p-sideline-jacket',
-    name: 'Sideline Quarter-Zip',
-    brand: 'Under Armour',
-    priceCents: 7500,
-    type: 'jacket',
-    colorways: [NAVY, BLACK, ROYAL],
-    categories: ['game-day', 'athletic', 'premium'],
-    fulfillment: 'made-to-order',
-    badge: 'PREMIUM',
-  },
-  {
-    id: 'p-student-section-tee',
-    name: 'Student Section Long Sleeve',
-    brand: 'Gildan',
-    priceCents: 3200,
-    type: 'longsleeve',
-    colorways: [ROYAL, WHITE, NAVY],
-    categories: ['game-day', 'tees', 'under-35'],
-    fulfillment: 'stock',
-    badge: 'NEW DROP',
-  },
-  {
-    id: 'p-structured-cap',
-    name: 'Structured K Cap',
-    brand: 'Nike',
-    priceCents: 2800,
-    type: 'cap',
-    colorways: [NAVY, ROYAL, WHITE, CHARCOAL],
-    categories: ['hats', 'everyday', 'under-35'],
-    fulfillment: 'stock',
-  },
-  {
-    id: 'p-heavyweight-crew',
-    name: 'Heavyweight Demons Crew',
-    brand: 'Champion',
-    priceCents: 4800,
-    type: 'crew',
-    colorways: [CHARCOAL, HEATHER, NAVY],
-    categories: ['hoodies', 'everyday', 'best-sellers'],
-    fulfillment: 'made-to-order',
-  },
-  {
-    id: 'p-performance-short',
-    name: 'Training Short',
-    brand: 'Adidas',
-    priceCents: 3500,
-    type: 'short',
-    colorways: [BLACK, NAVY, ROYAL],
-    categories: ['athletic', 'everyday'],
-    fulfillment: 'stock',
-  },
-  {
-    id: 'p-alumni-crew',
-    name: 'Alumni Est. 1921 Crew',
-    brand: 'Champion',
-    priceCents: 5200,
-    type: 'crew',
-    colorways: [NAVY, HEATHER, WHITE],
-    categories: ['alumni', 'premium'],
-    fulfillment: 'made-to-order',
-  },
-  {
-    id: 'p-tech-hoodie',
-    name: 'Tech Fleece Hoodie',
-    brand: 'Nike',
-    priceCents: 8500,
-    type: 'hoodie',
-    colorways: [BLACK, NAVY, CHARCOAL],
-    categories: ['premium', 'athletic', 'hoodies'],
-    fulfillment: 'made-to-order',
-    badge: 'PREMIUM',
-  },
-  {
-    id: 'p-youth-tee',
-    name: 'Youth Demons Tee',
-    brand: 'Gildan',
-    priceCents: 2200,
-    type: 'tee',
-    colorways: [ROYAL, WHITE, NAVY],
-    categories: ['kids', 'under-35', 'everyday'],
-    fulfillment: 'stock',
-  },
-];
+/* ---------- colour vocabulary ----------
+   BSN lists colours as words. This maps those words onto the Kennett palette
+   so a flat can be drawn; real photography overrides it when present. */
+const COLOR_MAP: Record<string, Colorway> = {
+  royal: { name: 'Royal', body: '#1b4ac6', mark: '#ffffff' },
+  blue: { name: 'Blue', body: '#1b4ac6', mark: '#ffffff' },
+  navy: { name: 'Navy', body: '#001854', mark: '#ffffff' },
+  white: { name: 'White', body: '#f2f5fa', mark: '#001854' },
+  heather: { name: 'Heather', body: '#b8c1d1', mark: '#001854' },
+  grey: { name: 'Grey', body: '#b8c1d1', mark: '#001854' },
+  gray: { name: 'Gray', body: '#b8c1d1', mark: '#001854' },
+  charcoal: { name: 'Charcoal', body: '#333d52', mark: '#ffffff' },
+  black: { name: 'Black', body: '#10131c', mark: '#ffffff' },
+  silver: { name: 'Silver', body: '#d4dae4', mark: '#001854' },
+  pink: { name: 'Pink', body: '#e8a0c0', mark: '#001854' },
+  red: { name: 'Red', body: '#c62828', mark: '#ffffff' },
+  green: { name: 'Green', body: '#2e7d52', mark: '#ffffff' },
+  gold: { name: 'Gold', body: '#d4a437', mark: '#001854' },
+};
 
-/** Locker-rail categories. Order matters: most-shopped first. */
+const DEFAULT_COLORWAYS: Colorway[] = [COLOR_MAP.royal, COLOR_MAP.navy, COLOR_MAP.white];
+
+const toColorway = (name: string): Colorway => {
+  const key = Object.keys(COLOR_MAP).find((k) => name.toLowerCase().includes(k));
+  return key ? { ...COLOR_MAP[key], name } : { name, body: '#5a6478', mark: '#ffffff' };
+};
+
+export const products: Product[] = generatedProducts.map(({ colorNames, ...p }) => ({
+  ...p,
+  colorways: colorNames?.length ? colorNames.map(toColorway) : DEFAULT_COLORWAYS,
+}));
+
+export const getProduct = (id: string) => products.find((p) => p.id === id);
+
+/* ---------- rails and filters ---------- */
 export const lockerCategories = [
   { id: 'all', label: 'All' },
   { id: 'hoodies', label: 'Hoodies' },
@@ -166,47 +83,6 @@ export const lockerCategories = [
   { id: 'kids', label: 'Kids' },
 ] as const;
 
-export type Fit = {
-  id: string;
-  name: string;
-  tagline: string;
-  itemIds: string[];
-  accent: string;
-};
-
-/** Curated outfits — the single biggest lever on average order value. */
-export const fits: Fit[] = [
-  {
-    id: 'friday-night-lights',
-    name: 'Friday Night Lights',
-    tagline: 'Cold bleachers. Loud section.',
-    itemIds: ['p-classic-hoodie', 'p-structured-cap', 'p-performance-short'],
-    accent: '#1b4ac6',
-  },
-  {
-    id: 'student-section',
-    name: 'Student Section',
-    tagline: 'Front row, full voice.',
-    itemIds: ['p-student-section-tee', 'p-structured-cap'],
-    accent: '#2f62e0',
-  },
-  {
-    id: 'cold-game',
-    name: 'Cold Game',
-    tagline: 'November on the sideline.',
-    itemIds: ['p-sideline-jacket', 'p-heavyweight-crew', 'p-structured-cap'],
-    accent: '#001854',
-  },
-  {
-    id: 'everyday-demon',
-    name: 'Everyday Demon',
-    tagline: 'Hallways, not headlines.',
-    itemIds: ['p-demon-tee', 'p-tech-hoodie'],
-    accent: '#0d3a9e',
-  },
-];
-
-/** "Shop by moment" — how students and parents actually think about buying. */
 export const moments = [
   { id: 'game-day', label: 'Game Day', note: 'Wear it Friday' },
   { id: 'new-drop', label: 'New Drop', note: 'Just landed' },
@@ -218,15 +94,77 @@ export const moments = [
   { id: 'alumni', label: 'Alumni', note: 'Once a Demon' },
 ];
 
-/** Brands BSN's Sideline platform carries. Wordmarks are rendered as type. */
-export const brands = ['NIKE', 'UNDER ARMOUR', 'ADIDAS', 'CHAMPION', 'NEW ERA', 'GILDAN'];
+/* ---------- Game Day Fits, as rules rather than fixed SKUs ----------
+   A fit asks for a shape of outfit; it resolves against whatever is in the
+   catalog. Real imported products slot straight in. */
+export type FitRule = {
+  id: string;
+  name: string;
+  tagline: string;
+  accent: string;
+  /** garment types to fill, in display order */
+  wants: GarmentType[];
+  /** bias toward products tagged with these categories */
+  prefer?: string[];
+};
 
-/** The "Choose Your K" mark variations. */
+export const fits: FitRule[] = [
+  {
+    id: 'friday-night-lights',
+    name: 'Friday Night Lights',
+    tagline: 'Cold bleachers. Loud section.',
+    accent: '#1b4ac6',
+    wants: ['hoodie', 'cap', 'short'],
+    prefer: ['game-day', 'best-sellers'],
+  },
+  {
+    id: 'student-section',
+    name: 'Student Section',
+    tagline: 'Front row, full voice.',
+    accent: '#2f62e0',
+    wants: ['longsleeve', 'cap'],
+    prefer: ['game-day', 'under-35'],
+  },
+  {
+    id: 'cold-game',
+    name: 'Cold Game',
+    tagline: 'November on the sideline.',
+    accent: '#001854',
+    wants: ['jacket', 'crew', 'cap'],
+    prefer: ['game-day', 'premium'],
+  },
+  {
+    id: 'everyday-demon',
+    name: 'Everyday Demon',
+    tagline: 'Hallways, not headlines.',
+    accent: '#0d3a9e',
+    wants: ['tee', 'hoodie'],
+    prefer: ['everyday'],
+  },
+];
+
+/** Resolve a fit against the live catalog, skipping types that do not exist. */
+export function resolveFit(fit: FitRule): Product[] {
+  const used = new Set<string>();
+  const picked: Product[] = [];
+  for (const want of fit.wants) {
+    const candidates = products.filter((p) => p.type === want && !used.has(p.id));
+    if (!candidates.length) continue;
+    const preferred =
+      candidates.find((p) => fit.prefer?.some((c) => p.categories.includes(c))) ?? candidates[0];
+    used.add(preferred.id);
+    picked.push(preferred);
+  }
+  return picked;
+}
+
+export const brands = Array.from(
+  new Set(products.map((p) => p.brand).filter(Boolean) as string[]),
+).slice(0, 8);
+
 export const marks = [
   { id: 'block-k', label: 'Block K' },
   { id: 'demon-head', label: 'Demon Head' },
   { id: 'wordmark', label: 'Kennett Script' },
   { id: 'class-year', label: 'Class of 2026' },
 ] as const;
-
-export const getProduct = (id: string) => products.find((p) => p.id === id);

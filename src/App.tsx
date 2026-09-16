@@ -21,7 +21,7 @@ export default function App() {
   const handleUnlock = useCallback((v: boolean) => setUnlocked(v), []);
   const addToBag = useCallback((p: Product) => setBag((b) => [...b, p]), []);
 
-  const total = formatPrice(bag.reduce((sum, p) => sum + p.priceCents, 0));
+  const total = formatPrice(bag.reduce((sum, p) => sum + (p.priceCents ?? 0), 0));
 
   return (
     <>

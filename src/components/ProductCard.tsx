@@ -2,11 +2,13 @@ import { useState } from 'react';
 import { Check, Heart, Plus } from 'lucide-react';
 
 import { Garment } from '@/components/Garment';
-import type { Product } from '@/data/catalog';
+import type { Colorway, Product } from '@/data/catalog';
 import { cn, formatPrice } from '@/lib/utils';
 
 /** Fulfillment truth, surfaced on the card instead of buried at checkout. */
 export function ShipBadge({ product, className }: { product: Product; className?: string }) {
+  // Never assert a shipping promise BSN did not make.
+  if (product.fulfillment === 'unknown') return null;
   const stock = product.fulfillment === 'stock';
   return (
     <span
@@ -19,6 +21,42 @@ export function ShipBadge({ product, className }: { product: Product; className?
       <span className={cn('size-1.5 rounded-full', stock ? 'bg-demon-400' : 'bg-steel-500')} />
       {stock ? 'Ships 2–5 days' : 'Made to order · 5–12 days'}
     </span>
+  );
+}
+
+/**
+ * Real BSN photography when we have it, the drawn flat when we don't — and
+ * automatically the flat if the image 404s or the CDN refuses the hotlink,
+ * so the rail never shows a broken-image box.
+ */
+export function ProductImage({
+  product,
+  colorway,
+  fit = 'cover',
+}: {
+  product: Product;
+  colorway: Colorway;
+  fit?: 'cover' | 'contain';
+}) {
+  const [broken, setBroken] = useState(false);
+
+  if (!product.image || broken) {
+    return (
+      <div className="h-full w-full p-5">
+        <Garment type={product.type} colorway={colorway} />
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={product.image}
+      alt={product.name}
+      loading="lazy"
+      decoding="async"
+      onError={() => setBroken(true)}
+      className={cn('h-full w-full', fit === 'cover' ? 'object-cover' : 'object-contain')}
+    />
   );
 }
 
@@ -61,8 +99,8 @@ export function ProductCard({
           <Heart className={cn('size-4 transition-all', wished && 'scale-110 fill-demon-500 text-demon-500')} />
         </button>
 
-        <div className="aspect-4/5 p-5 transition-transform duration-500 ease-out group-hover:scale-[1.04]">
-          <Garment type={product.type} colorway={colorway} />
+        <div className="aspect-4/5 transition-transform duration-500 ease-out group-hover:scale-[1.04]">
+          <ProductImage product={product} colorway={colorway} />
         </div>
 
         {/* Quick add — 44px target, visible on touch (never hover-only) */}
@@ -84,9 +122,11 @@ export function ProductCard({
           <h3 className="font-condensed text-[0.9375rem] leading-tight font-600 tracking-wide text-chalk-100 uppercase">
             {product.name}
           </h3>
-          <p className="shrink-0 text-sm font-600 text-chalk-50">{formatPrice(product.priceCents)}</p>
+          {product.priceCents != null && (
+            <p className="shrink-0 text-sm font-600 text-chalk-50">{formatPrice(product.priceCents)}</p>
+          )}
         </div>
-        <p className="type-eyebrow text-steel-400">{product.brand}</p>
+        {product.brand && <p className="type-eyebrow text-steel-400">{product.brand}</p>}
 
         <div className="mt-1 flex items-center gap-2" role="group" aria-label="Choose a color">
           {product.colorways.map((c, i) => (
