@@ -3,9 +3,42 @@ import { ArrowRight, ChevronsDown, Volume2, X } from 'lucide-react';
 
 import { cn, clamp, mapRange } from '@/lib/utils';
 
-const FRAME_COUNT = 64;
+const FRAME_COUNT = 88;
 const BASE = import.meta.env.BASE_URL;
-const frameUrl = (i: number) => `${BASE}hero/frames/f${String(i + 1).padStart(3, '0')}.webp`;
+
+/**
+ * Pick a resolution tier once, up front. Big screens get the 1300px frames;
+ * phones, low-end devices and anyone on Data Saver or a slow connection get
+ * the 860px set, which is less than half the bytes.
+ */
+function pickTier(): 'w860' | 'w1300' {
+  if (typeof window === 'undefined') return 'w860';
+  const conn = (
+    navigator as Navigator & {
+      connection?: { saveData?: boolean; effectiveType?: string };
+    }
+  ).connection;
+  if (conn?.saveData) return 'w860';
+  if (conn?.effectiveType && /(^|-)(2g|3g)$/.test(conn.effectiveType)) return 'w860';
+  const cssWidth = Math.max(window.innerWidth, window.innerHeight);
+  return cssWidth >= 1024 ? 'w1300' : 'w860';
+}
+
+const frameUrl = (tier: string, i: number) =>
+  `${BASE}hero/frames/${tier}/f${String(i + 1).padStart(3, '0')}.webp`;
+
+/**
+ * Load order: ends first, then progressively denser passes (every 8th, 4th,
+ * 2nd, then the rest). Scrubbing becomes usable after roughly a megabyte
+ * instead of waiting for the whole sequence, and it sharpens as it streams.
+ */
+function loadOrder(count: number): number[] {
+  const order: number[] = [0, count - 1];
+  for (const stride of [8, 4, 2, 1]) {
+    for (let i = 0; i < count; i += stride) order.push(i);
+  }
+  return [...new Set(order)];
+}
 
 /**
  * THE GATE
@@ -55,9 +88,8 @@ export function ScrollGate({ onUnlock }: { onUnlock: (unlocked: boolean) => void
     let cancelled = false;
     let done = 0;
 
-    // Load order: first frame (instant paint), last frame (end card), then fill in.
-    const order = [0, FRAME_COUNT - 1, ...Array.from({ length: FRAME_COUNT }, (_, i) => i)];
-    const queue = [...new Set(order)];
+    const tier = pickTier();
+    const queue = loadOrder(FRAME_COUNT);
     const CONCURRENCY = 6;
 
     const loadOne = (i: number) =>
@@ -81,7 +113,7 @@ export function ScrollGate({ onUnlock }: { onUnlock: (unlocked: boolean) => void
           if (!cancelled && done > FRAME_COUNT * 0.5 && !imagesRef.current[0]) setFailed(true);
           resolve();
         };
-        img.src = frameUrl(i);
+        img.src = frameUrl(tier, i);
       });
 
     const workers = Array.from({ length: CONCURRENCY }, async () => {
@@ -103,10 +135,24 @@ export function ScrollGate({ onUnlock }: { onUnlock: (unlocked: boolean) => void
   const draw = useCallback((index: number) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    // Walk backwards to the nearest frame that has actually loaded, so scrubbing
-    // ahead of the download never shows a blank canvas.
-    let i = index;
-    while (i >= 0 && !imagesRef.current[i]) i -= 1;
+    // Find the nearest frame that has actually loaded, searching both ways.
+    // While the sparse passes are still streaming, the closest neighbour is
+    // often ahead of the requested index, not behind it.
+    let i = -1;
+    if (imagesRef.current[index]) {
+      i = index;
+    } else {
+      for (let d = 1; d < FRAME_COUNT; d++) {
+        if (imagesRef.current[index - d]) {
+          i = index - d;
+          break;
+        }
+        if (imagesRef.current[index + d]) {
+          i = index + d;
+          break;
+        }
+      }
+    }
     if (i < 0) return;
     const img = imagesRef.current[i];
     if (!img) return;
@@ -174,10 +220,13 @@ export function ScrollGate({ onUnlock }: { onUnlock: (unlocked: boolean) => void
   };
 
   /* ---------- staged overlay opacities ---------- */
+  // Order matters: the room goes dark first, then the type lands on it.
+  // Overlapping the two reads as a rendering mistake rather than a cut.
   const approachOpacity = 1 - mapRange(progress, 0.0, 0.18);
-  const statementIn = mapRange(progress, 0.52, 0.78);
-  const ctaIn = mapRange(progress, 0.74, 0.92);
-  const vignette = mapRange(progress, 0.3, 1, 0.25, 0.75);
+  const scrimIn = mapRange(progress, 0.5, 0.7);
+  const statementIn = mapRange(progress, 0.72, 0.84);
+  const ctaIn = mapRange(progress, 0.82, 0.94);
+  const vignette = mapRange(progress, 0.3, 1, 0.25, 0.8);
 
   /* ============================ REDUCED MOTION ============================ */
   if (reduced) {
@@ -265,14 +314,14 @@ export function ScrollGate({ onUnlock }: { onUnlock: (unlocked: boolean) => void
         <div
           className="pointer-events-none absolute inset-0 z-10"
           style={{
-            opacity: statementIn,
+            opacity: scrimIn,
             background:
-              'radial-gradient(75% 45% at 50% 48%, rgba(5,9,26,0.88) 0%, rgba(5,9,26,0.6) 45%, transparent 75%)',
+              'radial-gradient(85% 55% at 50% 46%, rgba(5,9,26,0.96) 0%, rgba(5,9,26,0.78) 48%, rgba(5,9,26,0.15) 82%)',
           }}
         />
 
         {/* ---------------- The statement ---------------- */}
-        <div className="pointer-events-none relative z-20 px-6 text-center">
+        <div className="pointer-events-none relative z-20 -translate-y-[4%] px-6 text-center">
           <h1
             className="type-hero text-[clamp(3.25rem,17vw,11rem)] text-chalk-50"
             style={{

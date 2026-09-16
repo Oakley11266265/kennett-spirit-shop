@@ -113,6 +113,42 @@
 }
 
 @layer utilities {
+  /* Page shell. Content is measured, not stretched: long lines are hostile
+     to read, and a 1440px screen showing edge-to-edge product cards looks
+     like a spreadsheet rather than a brand. */
+  .shell {
+    margin-inline: auto;
+    width: 100%;
+    max-width: 1400px;
+    padding-inline: 1.25rem;
+  }
+  @media (min-width: 640px) {
+    .shell {
+      padding-inline: 2rem;
+    }
+  }
+  @media (min-width: 1024px) {
+    .shell {
+      padding-inline: 3rem;
+    }
+  }
+
+  /* Horizontal rails stay full-bleed so cards can run off the edge, but their
+     first card lines up with the shell. */
+  .rail-pad {
+    padding-inline: max(1.25rem, calc((100vw - 1400px) / 2 + 1.25rem));
+  }
+  @media (min-width: 640px) {
+    .rail-pad {
+      padding-inline: max(2rem, calc((100vw - 1400px) / 2 + 2rem));
+    }
+  }
+  @media (min-width: 1024px) {
+    .rail-pad {
+      padding-inline: max(3rem, calc((100vw - 1400px) / 2 + 3rem));
+    }
+  }
+
   .rail-scroll {
     overflow-x: auto;
     scroll-snap-type: x mandatory;

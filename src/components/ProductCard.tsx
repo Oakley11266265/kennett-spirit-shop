@@ -63,10 +63,12 @@ export function ProductImage({
 export function ProductCard({
   product,
   onAdd,
+  onOpen,
   className,
 }: {
   product: Product;
   onAdd?: (p: Product) => void;
+  onOpen?: (p: Product) => void;
   className?: string;
 }) {
   const [colorIndex, setColorIndex] = useState(0);
@@ -99,9 +101,16 @@ export function ProductCard({
           <Heart className={cn('size-4 transition-all', wished && 'scale-110 fill-demon-500 text-demon-500')} />
         </button>
 
-        <div className="aspect-4/5 transition-transform duration-500 ease-out group-hover:scale-[1.04]">
-          <ProductImage product={product} colorway={colorway} />
-        </div>
+        <button
+          type="button"
+          onClick={() => onOpen?.(product)}
+          aria-label={`View ${product.name}`}
+          className="block w-full cursor-pointer"
+        >
+          <div className="aspect-4/5 transition-transform duration-500 ease-out group-hover:scale-[1.04]">
+            <ProductImage product={product} colorway={colorway} />
+          </div>
+        </button>
 
         {/* Quick add — 44px target, visible on touch (never hover-only) */}
         <button
@@ -120,7 +129,9 @@ export function ProductCard({
       <div className="mt-3 flex flex-col gap-1.5">
         <div className="flex items-baseline justify-between gap-3">
           <h3 className="font-condensed text-[0.9375rem] leading-tight font-600 tracking-wide text-chalk-100 uppercase">
-            {product.name}
+            <button type="button" onClick={() => onOpen?.(product)} className="cursor-pointer text-left uppercase hover:text-chalk-50">
+              {product.name}
+            </button>
           </h3>
           {product.priceCents != null && (
             <p className="shrink-0 text-sm font-600 text-chalk-50">{formatPrice(product.priceCents)}</p>

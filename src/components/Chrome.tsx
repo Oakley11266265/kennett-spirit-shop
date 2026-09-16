@@ -30,7 +30,7 @@ export function Nav({ visible, bagCount }: { visible: boolean; bagCount: number 
       style={{ paddingTop: 'env(safe-area-inset-top)' }}
       aria-hidden={!visible}
     >
-      <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4 sm:px-5">
+      <nav className="shell flex h-16 items-center justify-between gap-3">
         <a href="#top" className="flex items-center gap-2.5">
           <span className="grid size-9 place-items-center rounded-sm bg-demon-600 font-display text-lg text-white">
             K
@@ -181,7 +181,7 @@ export function DraftNotice() {
 export function Footer() {
   return (
     <footer className="border-t border-chalk-100/8 bg-ink-950 pt-16 pb-10">
-      <div className="mx-auto max-w-6xl px-5">
+      <div className="shell">
         <p className="type-hero text-[clamp(2.5rem,12vw,7rem)] text-chalk-50/10">Wear Kennett.</p>
 
         <div className="mt-10 grid grid-cols-2 gap-8 sm:grid-cols-4">

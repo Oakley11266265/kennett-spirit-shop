@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 
 import { BagBar, DraftNotice, Footer, Nav } from '@/components/Chrome';
 import { LockerRail } from '@/components/LockerRail';
+import { ProductSheet } from '@/components/ProductSheet';
 import { ScrollGate } from '@/components/ScrollGate';
 import {
   BrandRail,
@@ -17,9 +18,12 @@ import { formatPrice } from '@/lib/utils';
 export default function App() {
   const [unlocked, setUnlocked] = useState(false);
   const [bag, setBag] = useState<Product[]>([]);
+  const [selected, setSelected] = useState<Product | null>(null);
 
   const handleUnlock = useCallback((v: boolean) => setUnlocked(v), []);
   const addToBag = useCallback((p: Product) => setBag((b) => [...b, p]), []);
+  const openProduct = useCallback((p: Product) => setSelected(p), []);
+  const closeProduct = useCallback(() => setSelected(null), []);
 
   const total = formatPrice(bag.reduce((sum, p) => sum + (p.priceCents ?? 0), 0));
 
@@ -37,8 +41,8 @@ export default function App() {
 
       <main>
         <ScrollGate onUnlock={handleUnlock} />
-        <DropRail onAdd={addToBag} />
-        <LockerRail />
+        <DropRail onAdd={addToBag} onOpen={openProduct} />
+        <LockerRail onOpen={openProduct} />
         <GameDayFits onAdd={addToBag} />
         <ShopByMoment />
         <ChooseYourK />
@@ -47,6 +51,7 @@ export default function App() {
       </main>
 
       <Footer />
+      <ProductSheet product={selected} onClose={closeProduct} onAdd={addToBag} />
       <BagBar count={bag.length} total={total} />
       <DraftNotice />
     </>

@@ -27,7 +27,7 @@ export function SectionHeading({
   className?: string;
 }) {
   return (
-    <motion.header {...reveal} className={cn('mb-8 flex items-end justify-between gap-6 px-5', className)}>
+    <motion.header {...reveal} className={cn('shell mb-8 flex items-end justify-between gap-6', className)}>
       <div>
         <p className="type-eyebrow text-demon-300">{eyebrow}</p>
         <h2 className="type-section mt-2.5 text-[clamp(2rem,7.5vw,4rem)] text-chalk-50">{title}</h2>
@@ -49,11 +49,11 @@ export function GameDayFits({ onAdd }: { onAdd: (p: Product) => void }) {
   return (
     <section id="fits" className="relative bg-ink-900 py-20 sm:py-24">
       <SectionHeading eyebrow="Curated looks" title="Game day fits." action="View all" />
-      <p className="mb-8 max-w-lg px-5 text-[0.9375rem] text-steel-400">
+      <p className="shell mb-8 max-w-lg text-[0.9375rem] text-steel-400">
         Every moment has a different uniform. Tap a look, take the whole thing.
       </p>
 
-      <div className="rail-scroll flex gap-4 px-5 pb-4">
+      <div className="rail-scroll rail-pad flex gap-4 pb-4">
         {fits.map((fit) => {
           const items = resolveFit(fit);
           const total = items.reduce((sum, i) => sum + (i.priceCents ?? 0), 0);
@@ -120,7 +120,7 @@ export function ShopByMoment() {
   return (
     <section id="moments" className="bg-ink-950 py-20 sm:py-24">
       <SectionHeading eyebrow="Shop by moment" title="What are you dressing for?" />
-      <div className="grid grid-cols-2 gap-2 px-5 sm:grid-cols-4">
+      <div className="shell grid grid-cols-2 gap-2 sm:grid-cols-4 lg:gap-3">
         {moments.map((m, i) => (
           <motion.button
             {...reveal}
@@ -146,14 +146,20 @@ export function ShopByMoment() {
 }
 
 /* ========================= NEW DROP RAIL ========================= */
-export function DropRail({ onAdd }: { onAdd: (p: Product) => void }) {
+export function DropRail({
+  onAdd,
+  onOpen,
+}: {
+  onAdd: (p: Product) => void;
+  onOpen: (p: Product) => void;
+}) {
   return (
     <section id="shop" className="scroll-mt-16 bg-ink-950 py-20 sm:py-24">
       <SectionHeading eyebrow="Just landed" title="The drop." action="Shop all" />
-      <div className="rail-scroll flex gap-4 px-5 pb-4 sm:gap-6">
+      <div className="rail-scroll rail-pad flex gap-4 pb-4 sm:gap-6">
         {products.slice(0, 8).map((p) => (
           <div key={p.id} className="snap-item w-[62vw] max-w-[260px] shrink-0 sm:w-[40vw] md:w-[260px]">
-            <ProductCard product={p} onAdd={onAdd} />
+            <ProductCard product={p} onAdd={onAdd} onOpen={onOpen} />
           </div>
         ))}
       </div>
@@ -176,7 +182,7 @@ export function ChooseYourK() {
       />
       <SectionHeading eyebrow="Same school, different style" title="Choose your K." className="relative" />
 
-      <div className="relative mx-auto max-w-lg px-5">
+      <div className="shell relative max-w-lg">
         <div className="relative mx-auto aspect-4/5 w-full max-w-sm">
           <Garment type="hoodie" colorway={{ name: 'White', body: '#f2f5fa', mark: '#001854' }} mark={mark.id as MarkStyle} />
         </div>
@@ -229,8 +235,8 @@ export function BrandRail() {
   if (!brands.length) return null;
   return (
     <section id="brands" className="border-y border-chalk-100/8 bg-ink-950 py-14">
-      <p className="type-eyebrow mb-6 px-5 text-steel-500">Premium brands. Same pride.</p>
-      <div className="rail-scroll flex items-center gap-10 px-5">
+      <p className="type-eyebrow shell mb-6 text-steel-500">Premium brands. Same pride.</p>
+      <div className="rail-scroll rail-pad flex items-center gap-10 sm:gap-16">
         {brands.map((b) => (
           <button
             key={b}
@@ -260,7 +266,7 @@ export function SeenAtKennett() {
   return (
     <section id="seen" className="bg-ink-900 py-20 sm:py-24">
       <SectionHeading eyebrow="Real students. Real moments." title="Seen at Kennett." />
-      <div className="grid auto-rows-[110px] grid-cols-3 gap-2 px-5 sm:auto-rows-[150px]">
+      <div className="shell grid auto-rows-[110px] grid-cols-3 gap-2 sm:auto-rows-[180px] sm:gap-3">
         {tiles.map((t, i) => (
           <motion.figure
             {...reveal}
@@ -281,7 +287,7 @@ export function SeenAtKennett() {
         ))}
       </div>
 
-      <div className="mt-6 px-5">
+      <div className="shell mt-6">
         <button
           type="button"
           className="inline-flex min-h-12 cursor-pointer items-center gap-2 rounded-full border border-chalk-100/25 px-6 text-xs font-bold tracking-[0.15em] text-chalk-100 uppercase transition-colors hover:border-chalk-50 hover:bg-chalk-50 hover:text-ink-950"

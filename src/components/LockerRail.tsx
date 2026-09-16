@@ -15,7 +15,7 @@ import { cn, formatPrice } from '@/lib/utils';
  * keyboard access, screen-reader order and trackpad support for free, and it
  * cannot drop frames the way a JS-driven transform rail does on a Chromebook.
  */
-export function LockerRail() {
+export function LockerRail({ onOpen }: { onOpen?: (p: Product) => void }) {
   const sectionRef = useRef<HTMLElement>(null);
   const railRef = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion() ?? false;
@@ -83,7 +83,7 @@ export function LockerRail() {
         }}
       />
 
-      <header className="relative z-10 mx-auto mb-10 max-w-6xl px-5">
+      <header className="shell relative z-10 mb-10">
         <p className="type-eyebrow text-demon-300">Open the locker</p>
         <h2 className="type-section mt-3 text-[clamp(2.5rem,9vw,5.5rem)] text-chalk-50">
           Find your fit.
@@ -95,7 +95,7 @@ export function LockerRail() {
 
       {/* Category chips */}
       <div className="relative z-10 mb-8">
-        <div className="rail-scroll flex gap-2 px-5 pb-1">
+        <div className="rail-scroll rail-pad flex gap-2 pb-1">
           {lockerCategories.map((c) => (
             <button
               key={c.id}
@@ -202,6 +202,7 @@ export function LockerRail() {
                       </div>
                       <button
                         type="button"
+                        onClick={() => onOpen?.(p)}
                         className="mt-3 inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-full bg-chalk-50 px-5 text-xs font-bold tracking-[0.15em] text-ink-950 uppercase transition-transform active:scale-95"
                       >
                         View product <ArrowRight className="size-3.5" />
