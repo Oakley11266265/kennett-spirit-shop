@@ -14,7 +14,15 @@ const links = [
 ];
 
 /** Appears only once the gate has been cleared, so the film is never boxed in. */
-export function Nav({ visible, bagCount }: { visible: boolean; bagCount: number }) {
+export function Nav({
+  visible,
+  bagCount,
+  onSearch,
+}: {
+  visible: boolean;
+  bagCount: number;
+  onSearch: () => void;
+}) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -60,6 +68,7 @@ export function Nav({ visible, bagCount }: { visible: boolean; bagCount: number 
         <div className="flex items-center gap-1">
           <button
             type="button"
+            onClick={onSearch}
             aria-label="Search the shop"
             className="grid size-11 cursor-pointer place-items-center rounded-full text-chalk-100 transition-colors hover:bg-chalk-100/10"
           >

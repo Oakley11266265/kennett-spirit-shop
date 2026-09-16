@@ -42,7 +42,9 @@ export function ProductImage({
 
   if (!product.image || broken) {
     return (
-      <div className="h-full w-full p-5">
+      // percentage padding so the flat fills a 64px search thumbnail and a
+      // full-size card equally well
+      <div className="h-full w-full p-[7%]">
         <Garment type={product.type} colorway={colorway} />
       </div>
     );

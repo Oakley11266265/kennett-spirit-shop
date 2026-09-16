@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 import { BagBar, DraftNotice, Footer, Nav } from '@/components/Chrome';
 import { LockerRail } from '@/components/LockerRail';
 import { ProductSheet } from '@/components/ProductSheet';
+import { SearchOverlay } from '@/components/SearchOverlay';
 import { ScrollGate } from '@/components/ScrollGate';
 import {
   BrandRail,
@@ -19,6 +20,7 @@ export default function App() {
   const [unlocked, setUnlocked] = useState(false);
   const [bag, setBag] = useState<Product[]>([]);
   const [selected, setSelected] = useState<Product | null>(null);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const handleUnlock = useCallback((v: boolean) => setUnlocked(v), []);
   const addToBag = useCallback((p: Product) => setBag((b) => [...b, p]), []);
@@ -37,7 +39,7 @@ export default function App() {
       </a>
 
       <div id="top" />
-      <Nav visible={unlocked} bagCount={bag.length} />
+      <Nav visible={unlocked} bagCount={bag.length} onSearch={() => setSearchOpen(true)} />
 
       <main>
         <ScrollGate onUnlock={handleUnlock} />
@@ -51,6 +53,11 @@ export default function App() {
       </main>
 
       <Footer />
+      <SearchOverlay
+        open={searchOpen}
+        onClose={() => setSearchOpen(false)}
+        onOpenProduct={openProduct}
+      />
       <ProductSheet product={selected} onClose={closeProduct} onAdd={addToBag} />
       <BagBar count={bag.length} total={total} />
       <DraftNotice />
