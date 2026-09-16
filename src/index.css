@@ -1,0 +1,158 @@
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Barlow+Condensed:wght@400;500;600;700&family=Barlow:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+/* ============================================================
+   KENNETT SPIRIT SHOP — DESIGN SYSTEM
+   Blues sampled from the real Blue Demon mark on the KHS doors
+   (deep navy #001854) and extended into an accessible screen scale.
+   ============================================================ */
+@theme {
+  /* Ground tones — the locker-room dark */
+  --color-ink-950: #05091a;
+  --color-ink-900: #0a1128;
+  --color-ink-800: #111a38;
+  --color-ink-700: #1b2547;
+
+  /* Demon blues — 850 is sampled directly from the door mark */
+  --color-demon-950: #000f36;
+  --color-demon-900: #001343;
+  --color-demon-850: #001854;
+  --color-demon-800: #052a75;
+  --color-demon-700: #0d3a9e;
+  --color-demon-600: #1b4ac6;
+  --color-demon-500: #2f62e0;
+  --color-demon-400: #5b85ee;
+  --color-demon-300: #93b2f6;
+  --color-demon-200: #c6d7fc;
+
+  /* Chalk — whites and warm off-whites */
+  --color-chalk-50: #ffffff;
+  --color-chalk-100: #f6f8fc;
+  --color-chalk-200: #e7ecf4;
+  --color-chalk-300: #cfd8e6;
+
+  /* Steel — neutral grays */
+  --color-steel-400: #9aa5b8;
+  --color-steel-500: #71809a;
+  --color-steel-600: #4d5a73;
+  --color-steel-700: #333d52;
+
+  --font-display: 'Anton', 'Arial Black', sans-serif;
+  --font-condensed: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+  --font-body: 'Barlow', system-ui, -apple-system, sans-serif;
+
+  --radius-card: 4px;
+
+  --shadow-lift: 0 18px 40px -18px rgb(0 15 54 / 0.55);
+  --shadow-rail: 0 30px 60px -30px rgb(0 0 0 / 0.8);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    background: var(--color-ink-950);
+    /* stops iOS rubber-banding from revealing white behind the gate */
+    overscroll-behavior-y: none;
+  }
+
+  body {
+    margin: 0;
+    background: var(--color-ink-950);
+    color: var(--color-chalk-100);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Display type: athletic, tight, poster-weight */
+  .type-hero {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    line-height: 0.85;
+    letter-spacing: -0.01em;
+  }
+
+  .type-section {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    line-height: 0.92;
+    letter-spacing: 0.005em;
+  }
+
+  .type-label {
+    font-family: var(--font-condensed);
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+  }
+
+  .type-eyebrow {
+    font-family: var(--font-condensed);
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.28em;
+    font-size: 0.6875rem;
+  }
+
+  /* The slight forward lean that makes athletic type feel like motion */
+  .lean {
+    transform: skewX(-6deg);
+  }
+
+  /* Focus ring — visible on every interactive element, never removed */
+  :where(a, button, [role='button'], input, select, [tabindex]):focus-visible {
+    outline: 3px solid var(--color-demon-400);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  ::selection {
+    background: var(--color-demon-600);
+    color: white;
+  }
+}
+
+@layer utilities {
+  .rail-scroll {
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+  }
+  .rail-scroll::-webkit-scrollbar {
+    display: none;
+  }
+  .snap-item {
+    scroll-snap-align: center;
+  }
+
+  /* Edge fade for horizontal rails — signals "there is more this way" */
+  .rail-mask {
+    -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+    mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+  }
+
+  .grain::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+}
+
+/* Honor the system setting: no scrub, no parallax, no drift. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
