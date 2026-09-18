@@ -75,7 +75,23 @@ const COLOR_MAP: Record<string, Colorway> = {
   gold: { name: 'Gold', body: '#d4a437', mark: '#001854' },
 };
 
-const DEFAULT_COLORWAYS: Colorway[] = [COLOR_MAP.royal, COLOR_MAP.navy, COLOR_MAP.white];
+/* When BSN gave us no colours, the flat still has to be drawn in something.
+   Picking deterministically from the product id gives a rack that looks like a
+   rack instead of two dozen identical royal blue shapes — and because the
+   swatch row stays hidden for these, it never claims to be a real colourway. */
+const FLAT_PALETTE: Colorway[] = [
+  COLOR_MAP.royal,
+  COLOR_MAP.navy,
+  COLOR_MAP.heather,
+  COLOR_MAP.white,
+  COLOR_MAP.charcoal,
+  COLOR_MAP.black,
+];
+const pickFlat = (id: string): Colorway[] => {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  return [FLAT_PALETTE[h % FLAT_PALETTE.length]];
+};
 
 const toColorway = (name: string): Colorway => {
   const key = Object.keys(COLOR_MAP).find((k) => name.toLowerCase().includes(k));
@@ -106,7 +122,7 @@ export function bsnImage(url?: string | null, size = 600): string | null {
 export const products: Product[] = generatedProducts.map(({ colorNames, ...p }) => ({
   ...p,
   image: bsnImage(p.image),
-  colorways: colorNames?.length ? colorNames.map(toColorway) : DEFAULT_COLORWAYS,
+  colorways: colorNames?.length ? colorNames.map(toColorway) : pickFlat(p.id),
   colorsKnown: Boolean(colorNames?.length),
 }));
 

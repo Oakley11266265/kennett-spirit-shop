@@ -39,30 +39,40 @@ export function ProductImage({
   colorway: Colorway;
   fit?: 'cover' | 'contain';
 }) {
-  const [broken, setBroken] = useState(false);
   const photo = usePhotos();
-  // bundled capture first, then BSN's live render, then the drawn flat
   const src = photo(product.id, product.image);
 
-  if (!src || broken) {
-    return (
-      // percentage padding so the flat fills a 64px search thumbnail and a
-      // full-size card equally well
-      <div className="h-full w-full p-[7%]">
+  /*
+   * The drawn flat is a LAYER, not a fallback branch. A blocked image does not
+   * reliably fire an error event — a content policy can refuse it silently —
+   * so branching on onError leaves an empty tile. Painting the flat underneath
+   * and letting a real photo cover it means the shelf is never blank, whatever
+   * happens to the network or the policy.
+   */
+  return (
+    <div className="relative h-full w-full">
+      <div className="absolute inset-0 p-[7%]">
         <Garment type={product.type} colorway={colorway} />
       </div>
-    );
-  }
-
-  return (
-    <img
-      src={src}
-      alt={product.name}
-      loading="lazy"
-      decoding="async"
-      onError={() => setBroken(true)}
-      className={cn('h-full w-full', fit === 'cover' ? 'object-cover' : 'object-contain')}
-    />
+      {src && (
+        <img
+          src={src}
+          /* Decorative: the product name is rendered as text beside it. An alt
+             string here would paint itself over the flat with a broken-image
+             icon the moment the photo is refused. */
+          alt=""
+          loading="lazy"
+          decoding="async"
+          onError={(e) => {
+            e.currentTarget.style.display = 'none';
+          }}
+          className={cn(
+            'absolute inset-0 h-full w-full',
+            fit === 'cover' ? 'object-cover' : 'object-contain',
+          )}
+        />
+      )}
+    </div>
   );
 }
 

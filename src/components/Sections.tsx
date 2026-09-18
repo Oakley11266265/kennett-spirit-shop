@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, ArrowUpRight, Camera, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, ChevronLeft, ChevronRight } from 'lucide-react';
 
 import { Garment, type MarkStyle } from '@/components/Garment';
 import { ProductCard } from '@/components/ProductCard';
@@ -253,14 +253,16 @@ export function BrandRail() {
 
 /* ========================= SEEN AT KENNETT ========================= */
 export function SeenAtKennett() {
-  /* Editorial UGC grid. Tiles are intentionally empty frames until real
-     student photography is supplied — no stock or generated people. */
+  /* Real frames from the Kennett entrance film rather than empty placeholders.
+     No stock photography and no generated students: until the school supplies
+     its own images, the honest filler is the school itself. */
+  const BASE = import.meta.env.BASE_URL;
   const tiles = [
-    { label: 'Student section', span: 'col-span-2 row-span-2' },
-    { label: 'Friday night', span: '' },
-    { label: 'Hallways', span: '' },
-    { label: 'Practice', span: '' },
-    { label: 'Homecoming', span: '' },
+    { label: 'The steps', frame: 'f006', span: 'col-span-2 row-span-2' },
+    { label: 'Under the columns', frame: 'f034', span: '' },
+    { label: 'The doors', frame: 'f060', span: '' },
+    { label: 'Blue Demons', frame: 'f082', span: '' },
+    { label: 'Inside', frame: 'f088', span: '' },
   ];
 
   return (
@@ -273,14 +275,19 @@ export function SeenAtKennett() {
             transition={{ ...reveal.transition, delay: i * 0.05 }}
             key={t.label}
             className={cn(
-              'group relative overflow-hidden rounded-card bg-gradient-to-br from-demon-900 to-ink-950 ring-1 ring-chalk-100/8',
+              'group relative overflow-hidden rounded-card bg-ink-950 ring-1 ring-chalk-100/8',
               t.span,
             )}
           >
-            <div className="absolute inset-0 grid place-items-center opacity-25">
-              <Camera className="size-6 text-chalk-100" aria-hidden="true" />
-            </div>
-            <figcaption className="type-label absolute bottom-2 left-3 text-[0.625rem] text-chalk-100/70">
+            <img
+              src={`${BASE}hero/frames/w860/${t.frame}.webp`}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              className="absolute inset-0 h-full w-full object-cover opacity-70 transition-all duration-500 group-hover:scale-105 group-hover:opacity-90"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-ink-950/85 via-transparent to-transparent" />
+            <figcaption className="type-label absolute bottom-2 left-3 text-[0.625rem] text-chalk-100">
               {t.label}
             </figcaption>
           </motion.figure>
