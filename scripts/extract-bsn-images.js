@@ -1,13 +1,31 @@
 /* ============================================================================
-   KENNETT SPIRIT SHOP — PRODUCT PHOTO CAPTURE
+   KENNETT SPIRIT SHOP — PRODUCT PHOTO CAPTURE   ** DOES NOT WORK — SEE BELOW **
 
-   Run this in the browser console on the BSN store, after extract-bsn.js.
-   It finds every product, pulls its render, prefers a transparent cut-out,
-   shrinks it to a 260px WebP and saves kennett-images.json.
+   Tried 2026-09-17 against the live store: 0 captured, 836 failed. Every
+   request came back "net::ERR_FAILED 200 (OK)" — the image downloaded fine,
+   and the browser then refused to let script read it:
 
-   Why bundle photos at all: a sandboxed preview blocks external images
-   outright, and hotlinking leaves the storefront at the mercy of BSN's CDN
-   paths. Drop the result at public/products/images.json.
+     Access to fetch at 'https://cache.bsnsports.com/comp/render?...'
+     from origin 'https://sideline.bsnsports.com' has been blocked by CORS
+     policy: No 'Access-Control-Allow-Origin' header is present
+
+   cache.bsnsports.com sends no CORS header, so fetch() cannot read the bytes
+   and <img> + canvas taints the canvas, making toDataURL() throw. There is no
+   browser-side way around that, and there should not be.
+
+   This does NOT affect showing the photos. Cross-origin <img> display needs no
+   CORS at all — which is why BSN's own storefront renders these same images
+   from this same host. The storefront displays them correctly the moment it
+   runs on a real URL.
+
+   Two ways to get photos, then:
+     1. Deploy the site. <img src="https://cache.bsnsports.com/..."> just works.
+        Only a sandboxed preview blocks external images, via its own CSP.
+     2. To bundle copies (offline-proof, CDN-change-proof), fetch them from a
+        server rather than a browser — no CORS involved — and write
+        public/products/images.json. See scripts/import-bsn.mjs --mirror.
+
+   Kept for the record. Do not paste this into a console expecting photos.
    ========================================================================== */
 
 (async()=>{const A=u=>{try{return new URL(u,location.origin).href}catch{return null}},

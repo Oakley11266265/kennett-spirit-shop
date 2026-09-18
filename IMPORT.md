@@ -85,7 +85,20 @@ shows no price. Ship time stays `unknown` and the shipping badge hides itself
 rather than promising a delivery window BSN never stated. The report printed
 at the end lists exactly what came back thin.
 
-### Product photography
+### Product photography — where it actually comes from
+
+**The photos work on a deployed site with no extra step.** Products carry their
+BSN render URL, and a cross-origin `<img>` needs no permission from the server
+to display. The only place they do not appear is a sandboxed preview, whose
+content policy blocks every external image regardless of origin.
+
+Copying the photos out of the browser is not possible: `cache.bsnsports.com`
+sends no `Access-Control-Allow-Origin` header, so `fetch()` cannot read the
+bytes and drawing to a canvas taints it. Confirmed against the live store —
+836 attempts, 0 readable. Bundling copies has to happen server-side, where
+CORS does not apply (`import-bsn.mjs --mirror`).
+
+### Mirroring
 
 Imported images are used straight from BSN's CDN. If one fails to load, the
 card silently falls back to the drawn flat instead of showing a broken image.
