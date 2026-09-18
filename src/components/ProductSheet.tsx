@@ -120,7 +120,7 @@ export function ProductSheet({
             </div>
 
             <div className="px-4">
-              <div className="mx-auto aspect-4/5 w-full max-w-64 overflow-hidden rounded-card bg-gradient-to-b from-ink-800 to-ink-900">
+              <div className="mx-auto aspect-4/5 w-full max-w-64 overflow-hidden rounded-card bg-ink-900">
                 <ProductImage product={product} colorway={colorway} fit="contain" />
               </div>
 

@@ -82,8 +82,30 @@ const toColorway = (name: string): Colorway => {
   return key ? { ...COLOR_MAP[key], name } : { name, body: '#5a6478', mark: '#ffffff' };
 };
 
+/**
+ * BSN renders product photos on demand and takes the background colour as a
+ * URL parameter (bc=f9f9f9, a light grey). Left alone, every product would sit
+ * on a bright square against our dark cards. Re-rendering on ink-900 makes the
+ * garment sit on the page instead of in a box, and w/h control the crop size.
+ */
+const CARD_BG = '0a1128';
+export function bsnImage(url?: string | null, size = 600): string | null {
+  if (!url) return null;
+  try {
+    const u = new URL(url);
+    if (!/bsnsports\.com$/.test(u.hostname.replace(/^cache\./, 'bsnsports.com'))) return url;
+    u.searchParams.set('bc', CARD_BG);
+    u.searchParams.set('w', String(size));
+    u.searchParams.set('h', String(size));
+    return u.toString();
+  } catch {
+    return url;
+  }
+}
+
 export const products: Product[] = generatedProducts.map(({ colorNames, ...p }) => ({
   ...p,
+  image: bsnImage(p.image),
   colorways: colorNames?.length ? colorNames.map(toColorway) : DEFAULT_COLORWAYS,
   colorsKnown: Boolean(colorNames?.length),
 }));

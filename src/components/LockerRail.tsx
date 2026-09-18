@@ -155,7 +155,10 @@ export function LockerRail({ onOpen }: { onOpen?: (p: Product) => void }) {
         {/* ---- The rail ---- */}
         <motion.div style={{ y: reduce ? 0 : railRise }} className="relative">
           {/* hanging bar */}
-          <div className="pointer-events-none absolute top-6 right-0 left-0 z-0 h-1.5 bg-gradient-to-b from-steel-400 to-steel-600 shadow-rail" />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute top-5 right-0 left-0 z-20 h-2 rounded-full bg-gradient-to-b from-chalk-300 via-steel-400 to-steel-700 shadow-rail"
+          />
 
           <div ref={railRef} className="rail-scroll rail-mask flex gap-4 px-[50vw] pt-2 pb-6 sm:gap-6">
             {visible.map((p) => {
@@ -166,25 +169,32 @@ export function LockerRail({ onOpen }: { onOpen?: (p: Product) => void }) {
                   data-pid={p.id}
                   className="snap-item relative w-[62vw] max-w-[280px] shrink-0 sm:w-[38vw] md:w-[300px]"
                 >
-                  {/* hanger */}
-                  <div className="relative z-10 mx-auto h-10 w-10">
-                    <svg viewBox="0 0 40 40" className="h-full w-full text-steel-400" aria-hidden="true">
+                  {/* Hanger: the hook rises to meet the rail bar and the
+                      shoulders tuck behind the garment below it. */}
+                  <div className="relative z-10 mx-auto -mt-3 h-12 w-16">
+                    <svg viewBox="0 0 64 48" className="h-full w-full text-steel-400" aria-hidden="true">
                       <path
-                        d="M20 6a4 4 0 0 0-4 4c0 2 1.5 3.2 3 3.8V17L6 27c-1.5 1-1 3 1 3h26c2 0 2.5-2 1-3L21 17v-3.2c1.5-.6 3-1.8 3-3.8a4 4 0 0 0-4-4z"
+                        d="M32 4a6 6 0 0 0-6 6c0 2.8 2 5 4.5 5.8V20L5 36c-2 1.3-1.2 4 1.2 4h51.6c2.4 0 3.2-2.7 1.2-4L33.5 20v-4.2C36 15 38 12.8 38 10a6 6 0 0 0-6-6z"
                         fill="none"
                         stroke="currentColor"
-                        strokeWidth="2"
+                        strokeWidth="2.5"
+                        strokeLinejoin="round"
                       />
                     </svg>
                   </div>
 
                   <div
                     className={cn(
-                      'relative -mt-4 transition-all duration-500 ease-out',
-                      active ? 'translate-y-0 scale-100 opacity-100' : 'translate-y-2 scale-[0.9] opacity-55',
+                      'relative -mt-7 transition-all duration-500 ease-out',
+                      active ? 'translate-y-0 scale-100 opacity-100' : 'translate-y-2 scale-[0.92] opacity-60',
                     )}
                   >
-                    <div className="aspect-4/5">
+                    <div
+                      className={cn(
+                        'aspect-4/5 transition-[filter] duration-500',
+                        active ? 'drop-shadow-[0_24px_28px_rgba(0,0,0,0.55)]' : 'drop-shadow-none',
+                      )}
+                    >
                       <ProductImage product={p} colorway={p.colorways[0]} fit="contain" />
                     </div>
 

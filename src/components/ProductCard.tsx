@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Check, Heart, Plus } from 'lucide-react';
 
 import { Garment } from '@/components/Garment';
+import { usePhotos } from '@/lib/photos';
 import type { Colorway, Product } from '@/data/catalog';
 import { cn, formatPrice } from '@/lib/utils';
 
@@ -32,15 +33,18 @@ export function ShipBadge({ product, className }: { product: Product; className?
 export function ProductImage({
   product,
   colorway,
-  fit = 'cover',
+  fit = 'contain',
 }: {
   product: Product;
   colorway: Colorway;
   fit?: 'cover' | 'contain';
 }) {
   const [broken, setBroken] = useState(false);
+  const photo = usePhotos();
+  // bundled capture first, then BSN's live render, then the drawn flat
+  const src = photo(product.id, product.image);
 
-  if (!product.image || broken) {
+  if (!src || broken) {
     return (
       // percentage padding so the flat fills a 64px search thumbnail and a
       // full-size card equally well
@@ -52,7 +56,7 @@ export function ProductImage({
 
   return (
     <img
-      src={product.image}
+      src={src}
       alt={product.name}
       loading="lazy"
       decoding="async"
@@ -86,7 +90,7 @@ export function ProductCard({
 
   return (
     <article className={cn('group flex w-full flex-col', className)}>
-      <div className="relative overflow-hidden rounded-card bg-gradient-to-b from-ink-800 to-ink-900 ring-1 ring-chalk-100/8">
+      <div className="relative overflow-hidden rounded-card bg-ink-900 ring-1 ring-chalk-100/8">
         {product.badge && (
           <span className="type-label absolute top-3 left-3 z-10 rounded-full bg-chalk-50 px-2.5 py-1 text-[0.5625rem] text-ink-950">
             {product.badge}
@@ -110,7 +114,7 @@ export function ProductCard({
           className="block w-full cursor-pointer"
         >
           <div className="aspect-4/5 transition-transform duration-500 ease-out group-hover:scale-[1.04]">
-            <ProductImage product={product} colorway={colorway} />
+            <ProductImage product={product} colorway={colorway} fit="contain" />
           </div>
         </button>
 
