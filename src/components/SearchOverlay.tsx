@@ -29,6 +29,9 @@ function score(product: Product, terms: string[]): number {
 
 const QUICK = ['Hoodie', 'Hat', 'Under $35', 'Game day', 'Kids', 'Nike'];
 
+/** Long result lists stop being useful; refine the query instead. */
+const SEARCH_MAX = 40;
+
 export function SearchOverlay({
   open,
   onClose,
@@ -164,9 +167,10 @@ export function SearchOverlay({
                 <>
                   <p className="type-label mb-3 text-[0.6875rem] text-steel-400">
                     {results.length} {results.length === 1 ? 'item' : 'items'}
+                    {results.length > SEARCH_MAX && ` · showing first ${SEARCH_MAX}`}
                   </p>
                   <ul className="space-y-1.5">
-                    {results.map((p) => (
+                    {results.slice(0, SEARCH_MAX).map((p) => (
                       <li key={p.id}>
                         <button
                           type="button"

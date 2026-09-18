@@ -23,8 +23,14 @@ export function LockerRail({ onOpen }: { onOpen?: (p: Product) => void }) {
   const [category, setCategory] = useState<string>('all');
   const [centeredId, setCenteredId] = useState<string | null>(null);
 
-  const visible: Product[] =
+  /* A real BSN store runs to hundreds of SKUs. The rail is a browsing
+     gesture, not a catalog dump: cap what hangs on it so the section stays
+     light on a Chromebook, and let the count tell the honest total. */
+  const RAIL_MAX = 24;
+  const matching: Product[] =
     category === 'all' ? products : products.filter((p) => p.categories.includes(category));
+  const visible: Product[] = matching.slice(0, RAIL_MAX);
+  const hidden = matching.length - visible.length;
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -90,6 +96,14 @@ export function LockerRail({ onOpen }: { onOpen?: (p: Product) => void }) {
         </h2>
         <p className="mt-3 max-w-md text-[0.9375rem] text-steel-400">
           Everything on the rail is official Kennett gear. Swipe the rack.
+          {hidden > 0 && (
+            <>
+              {' '}
+              <span className="text-chalk-200">
+                Showing {visible.length} of {matching.length}.
+              </span>
+            </>
+          )}
         </p>
       </header>
 
@@ -188,6 +202,7 @@ export function LockerRail({ onOpen }: { onOpen?: (p: Product) => void }) {
                         {p.priceCents != null && formatPrice(p.priceCents)}
                         {p.brand && <span className="text-steel-500"> · {p.brand}</span>}
                       </p>
+                      {p.colorsKnown && (
                       <div className="mt-2 flex items-center justify-center gap-1.5">
                         {p.colorways.map((c) => (
                           <span
@@ -197,6 +212,7 @@ export function LockerRail({ onOpen }: { onOpen?: (p: Product) => void }) {
                           />
                         ))}
                       </div>
+                      )}
                       <div className="mt-2 flex justify-center">
                         <ShipBadge product={p} />
                       </div>

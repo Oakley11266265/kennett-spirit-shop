@@ -41,37 +41,112 @@ const money = (v) => {
   return m ? Math.round(parseFloat(m[1]) * 100) : null;
 };
 
-/** Map a product name onto one of the garment silhouettes we can draw. */
-/* Order matters. "Short Sleeve Tee" must reach the tee rule, never the
-   shorts rule, so sleeve wording is resolved before any bottoms match. */
+/* ---------------------------------------------------------------------------
+   BSN's product tiles glue UI chrome, the brand and the product name into one
+   string: "Design It Quick Add NikeMen's Club Pullover Fleece Hoodie", and
+   swatch counts ride along as "+5 More +11". These strip it back apart.
+------------------------------------------------------------------------- */
+
+// Chrome can appear anywhere, not just at the start: BSN renders
+// "Youth Design It Quick Add NikeYouth Club Pullover Fleece Hoodie".
+const CHROME = /(?:Design It|Quick Add|Shop Now|Customize|\+\d+(?:\s*More)?)/gi;
+
+/* Longest first so "Under Armour" wins over "Under", and "Port Authority"
+   over "Port & Company". Sourced from the store's own /brands/ pages. */
+const BRANDS = [
+  'Augusta Sportswear', 'Under Armour', 'The North Face', 'Next Level Apparel', 'Brooks Brothers',
+  'Outdoor Research', 'Mercer+Mettle', 'Stanley/Stella', 'Port Authority',
+  'Port & Company', 'Rabbit Skins', 'Tommy Bahama', 'TravisMathew', 'BSN SPORTS',
+  'New Balance', 'CornerStone', 'Next Level', 'Sport-Tek', 'Richardson',
+  'Lululemon', 'MV Sport', 'Champion', 'Cotopaxi', 'Carhartt', 'District',
+  'New Era', 'Adidas', 'Gildan', 'Jerzees', 'Nike', 'OGIO', 'UA',
+];
+
+function splitBrand(raw) {
+  const cleaned = raw.replace(CHROME, ' ').replace(/\s+/g, ' ').trim();
+  // Find the brand wherever it sits, then keep everything after it. The tail
+  // already restates the audience, so "Youth NikeYouth Club Hoodie" resolves
+  // to Nike + "Youth Club Hoodie" without special-casing the leading word.
+  let best = null;
+  for (const brand of BRANDS) {
+    const at = cleaned.toLowerCase().indexOf(brand.toLowerCase());
+    if (at === -1) continue;
+    if (!best || at < best.at || (at === best.at && brand.length > best.brand.length)) {
+      best = { brand, at };
+    }
+  }
+  if (!best) return { brand: null, name: cleaned };
+  const rest = cleaned.slice(best.at + best.brand.length).trim();
+  return { brand: best.brand, name: rest || cleaned };
+}
+
+/** Garment silhouette, used for the drawn flats and for outfit building. */
 const GARMENT_RULES = [
-  [/\b(hoodie|hooded|pullover hood|sweatshirt hood)\b/i, 'hoodie'],
-  [/\b(quarter.?zip|1\/4 zip|full.?zip|jacket|windbreaker|vest|warm.?up)\b/i, 'jacket'],
-  [/\b(long.?sleeve|ls tee)\b/i, 'longsleeve'],
-  [/\bshort.?sleeve\b/i, 'tee'],
-  [/\b(crew|crewneck|sweatshirt|fleece|pullover)\b/i, 'crew'],
-  [/\b(hat|cap|beanie|visor|snapback|trucker)\b/i, 'cap'],
-  [/\b(shorts?|jogger|pants?|legging|sweatpant)\b(?!\s*sleeve)/i, 'short'],
-  [/\b(tee|t.?shirt|shirt|jersey|tank|polo)\b/i, 'tee'],
+  [/\bhoodies?\b|\bhooded\b/i, 'hoodie'],
+  [/\bbeanies?\b|\bknit cap\b|\bpom\b/i, 'beanie'],
+  [/\b(backpacks?|duffels?|totes?|cinch|bags?|crossbody|lunch)\b|\b(?:rec|sling|book)\s?packs?\b/i, 'bag'],
+  [/\b(caps?|hats?|truckers?|snapback|visor|bucket)\b|\b\d-panel\b|\bflatbill\b|\bgramps\b/i, 'cap'],
+  [/\bpolos?\b/i, 'polo'],
+  // 1/4-Zip, 1/2 Zip, Half Zip and Mid-Layer all read as outerwear here
+  [/(?:\b(?:quarter|half)|1\/[24])[\s-]?zip|full[\s-]?zip|\b(jackets?|windbreakers?|vests?|coats?|soft ?shell|anorak|parka|mid[\s-]?layer|warm[\s-]?up|cardigans?|bombers?|ponchos?)\b/i, 'jacket'],
+  [/\b(leggings?|joggers?|sweatpants?|pants?|trousers?|chinos?|tights?|capris?)\b/i, 'pant'],
+  [/\b(shorts?|skirts?|skort)\b(?!\s*sleeve)/i, 'short'],
+  [/\b(long[\s-]?sleeve|ls tee)\b/i, 'longsleeve'],
+  [/\bshort[\s-]?sleeve\b/i, 'tee'],
+  [/\b(crews?|crewneck|sweatshirts?|sweaters?|fleece|pullovers?)\b/i, 'crew'],
+  [/\b(tees?|t[\s-]?shirts?|shirts?|jerseys?|tanks?|tops?|raglans?|racerback|sleeveless|v[\s-]?neck|camisole)\b/i, 'tee'],
+  [/\b(decals?|stickers?|tumblers?|bottles?|mugs?|socks?|towels?|blankets?|magnets?|signs?)\b/i, 'accessory'],
 ];
 const inferType = (name) => {
   for (const [re, type] of GARMENT_RULES) if (re.test(name)) return type;
-  warnings.push(`Could not tell what kind of garment "${name}" is — defaulted to tee.`);
-  return 'tee';
+  warnings.push(`No garment type matched "${name}" — filed as accessory.`);
+  return 'accessory';
 };
 
-const KNOWN_BRANDS = [
-  'Nike', 'Under Armour', 'Adidas', 'Champion', 'New Era', 'Gildan', 'Badger', 'Holloway',
-  'Augusta', 'Russell', 'Columbia', 'Cutter & Buck', 'Sport-Tek', 'Next Level', 'Comfort Colors',
-  'Jerzees', 'Port Authority', 'Richardson', 'Nine Line', 'Ouray', 'MV Sport', 'League',
-];
-const inferBrand = (name, given) => {
-  if (given) return String(given).trim();
-  const hit = KNOWN_BRANDS.find((b) => new RegExp(`\\b${b.replace(/[&]/g, '.')}\\b`, 'i').test(name));
-  return hit ?? null;
-};
+/** BSN publishes a real category path per tile, e.g. mens/hoodies-sweatshirts/crewnecks.
+    That beats guessing from the product name, so it drives the rails. */
+function categorize(name, type, priceCents, path) {
+  const cats = new Set();
+  const seg = String(path || '').toLowerCase().split('/');
+  const n = name.toLowerCase();
 
-/** Colour words BSN puts in product names or colour lists. */
+  if (seg[0] === 'mens') cats.add('mens');
+  if (seg[0] === 'womens') cats.add('women');
+  if (seg[0] === 'kids') cats.add('kids');
+  if (seg[0] === 'hats') cats.add('hats');
+  if (seg[0] === 'accessories') cats.add('accessories');
+  if (seg[0] === 'new-trending') {
+    cats.add('new-drop');
+    if (seg[1] === 'best-sellers') cats.add('best-sellers');
+  }
+
+  const joined = seg.join('/');
+  if (/hoodies-sweatshirts/.test(joined)) cats.add('hoodies');
+  if (/t-shirts/.test(joined)) cats.add('tees');
+  if (/jackets-vests/.test(joined)) cats.add('outerwear');
+  if (/shorts|compression|athletic|training|pants-leggings/.test(joined)) cats.add('athletic');
+  if (/polos/.test(joined)) cats.add('polos');
+  if (/bags|accessories/.test(joined)) cats.add('accessories');
+
+  // type is the fallback when the path is a brand page or the bare root
+  if (!cats.size || seg[0] === 'brands' || seg[0] === 'main') {
+    if (type === 'hoodie' || type === 'crew') cats.add('hoodies');
+    if (type === 'tee' || type === 'longsleeve') cats.add('tees');
+    if (type === 'cap' || type === 'beanie') cats.add('hats');
+    if (type === 'bag' || type === 'accessory') cats.add('accessories');
+    if (type === 'short' || type === 'pant') cats.add('athletic');
+  }
+
+  if (/youth|toddler|infant|boys|girls/.test(n)) cats.add('kids');
+  if (/alumni|est\.?\s*19/.test(n)) cats.add('alumni');
+
+  if (priceCents != null && priceCents < 3500) cats.add('under-35');
+  if (priceCents != null && priceCents >= 7500) cats.add('premium');
+
+  cats.add('everyday');
+  return Array.from(cats);
+}
+
 const COLOR_WORDS = [
   'royal', 'navy', 'white', 'black', 'charcoal', 'heather', 'grey', 'gray', 'silver',
   'blue', 'red', 'pink', 'green', 'gold', 'maroon', 'purple', 'orange',
@@ -80,30 +155,6 @@ const inferColors = (p) => {
   if (Array.isArray(p.colors) && p.colors.length) return p.colors.map(String);
   const found = COLOR_WORDS.filter((c) => new RegExp(`\\b${c}\\b`, 'i').test(p.name));
   return found.length ? found.map((c) => c[0].toUpperCase() + c.slice(1)) : [];
-};
-
-/** Categories drive the rails and the moment grid. */
-const categorize = (name, type, priceCents, sourceCategory) => {
-  const cats = new Set();
-  const n = name.toLowerCase();
-  const src = (sourceCategory || '').toLowerCase();
-
-  if (type === 'hoodie' || type === 'crew') cats.add('hoodies');
-  if (type === 'tee' || type === 'longsleeve') cats.add('tees');
-  if (type === 'cap') cats.add('hats');
-  if (type === 'short' || type === 'jacket') cats.add('athletic');
-
-  if (/youth|kid|toddler|infant|girls|boys/.test(n) || /kid|youth/.test(src)) cats.add('kids');
-  if (/women|ladies|womens/.test(n) || /women/.test(src)) cats.add('women');
-  if (/alumni|est\.?\s*19/.test(n)) cats.add('alumni');
-  if (/performance|dri.?fit|training|practice|athletic/.test(n)) cats.add('athletic');
-  if (/game ?day|fan|spirit/.test(n)) cats.add('game-day');
-
-  if (priceCents != null && priceCents < 3500) cats.add('under-35');
-  if (priceCents != null && priceCents >= 6500) cats.add('premium');
-
-  cats.add('everyday');
-  return Array.from(cats);
 };
 
 /* ------------------------------- parsers -------------------------------- */
@@ -215,34 +266,40 @@ else parsed = fromHtmlFolder(argPath);
 
 const { rows, storeUrl } = parsed;
 
-/* de-duplicate, normalise, and keep only rows that at least have a name */
+/* De-duplicate on BSN's own product id — the same shirt appears on several
+   category pages, and name matching would merge genuinely different SKUs. */
 const byKey = new Map();
 for (const r of rows) {
   if (!r?.name) continue;
-  const name = String(r.name).trim().replace(/\s+/g, ' ');
-  if (name.length < 3) continue;
-  if (/^(shop|view|home|cart|search|sign in|menu)$/i.test(name)) continue;
 
-  const key = slug(name);
+  const { brand, name } = splitBrand(String(r.name).replace(/\s+/g, ' '));
+  if (!name || name.length < 3) continue;
+  if (/^(shop|view|home|cart|search|sign in|menu|youth)$/i.test(name)) continue;
+
+  const bsnId = /\/product\/view\/(\d+)/.exec(r.url || '')?.[1];
+  const key = bsnId ?? slug(name);
   const priceCents = r.priceCents ?? money(r.priceText ?? r.price);
+
   const existing = byKey.get(key);
   if (existing) {
     if (!existing.image && r.image) existing.image = r.image;
     if (existing.priceCents == null && priceCents != null) existing.priceCents = priceCents;
-    if (!existing.bsnUrl && r.url) existing.bsnUrl = r.url;
+    // a product listed under several pages earns all of those facets
+    for (const c of categorize(name, existing.type, priceCents, r.category)) {
+      if (!existing.categories.includes(c)) existing.categories.push(c);
+    }
     continue;
   }
 
   const type = inferType(name);
   byKey.set(key, {
-    id: key,
+    id: bsnId ? `bsn-${bsnId}` : slug(name),
     name,
-    brand: inferBrand(name, r.brand),
+    brand: brand ?? (r.brand ? String(r.brand).trim() : null),
     priceCents,
     type,
     colorNames: inferColors({ ...r, name }),
     categories: categorize(name, type, priceCents, r.category),
-    // BSN does not publish a machine-readable ship time on listing pages.
     fulfillment: 'unknown',
     image: r.image ?? null,
     bsnUrl: r.url ?? null,

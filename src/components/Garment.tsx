@@ -205,6 +205,57 @@ export function Garment({
         <circle cx="100" cy="78" r="4" fill={shade} />
       </>
     ),
+    polo: (
+      <>
+        {shortSleeves}
+        {torso}
+        {/* placket + collar */}
+        <path d="M78 56h44l-5 12H83z" fill={shade} />
+        <path d="M78 56q22 14 44 0" {...stroke} />
+        <path d="M94 66v26h12V66" {...stroke} />
+        <circle cx="100" cy="74" r="2" fill={line} />
+        <circle cx="100" cy="86" r="2" fill={line} />
+        <path d="M60 196h80" {...stroke} />
+      </>
+    ),
+    pant: (
+      <>
+        <path d="M56 46h88v16H56z" fill={shade} />
+        <path d="M56 46h88l-6 168q-1 6-7 6h-20q-6 0-7-6l-4-92-4 92q-1 6-7 6H70q-6 0-7-6z" fill={body} />
+        <path d="M56 46h88" {...stroke} />
+        <path d="M56 62h88" {...stroke} />
+        <path d="M100 118v102" {...stroke} />
+      </>
+    ),
+    beanie: (
+      <>
+        <path d="M54 150q0-72 46-72t46 72z" fill={body} />
+        <path d="M50 150h100v28q0 6-6 6H56q-6 0-6-6z" fill={shade} />
+        <path d="M50 150h100" {...stroke} />
+        <path d="M74 88q8 34 8 62" {...stroke} />
+        <path d="M126 88q-8 34-8 62" {...stroke} />
+        <circle cx="100" cy="74" r="10" fill={body} stroke={line} strokeWidth="1.4" />
+      </>
+    ),
+    bag: (
+      <>
+        {/* straps behind the body */}
+        <path d="M76 84q-14-30 10-30t10 30" fill="none" stroke={line} strokeWidth="3" />
+        <path d="M124 84q14-30-10-30t-10 30" fill="none" stroke={line} strokeWidth="3" />
+        <path d="M62 84h76q8 0 8 8v104q0 8-8 8H62q-8 0-8-8V92q0-8 8-8z" fill={body} />
+        <path d="M54 140h92" {...stroke} />
+        <path d="M78 150h44v30H78z" fill={shade} />
+        <path d="M78 150h44v30H78z" {...stroke} />
+        <rect x="94" y="130" width="12" height="8" rx="2" fill={line} />
+      </>
+    ),
+    accessory: (
+      <>
+        <circle cx="100" cy="128" r="56" fill={body} />
+        <circle cx="100" cy="128" r="56" {...stroke} />
+        <circle cx="100" cy="128" r="42" fill="none" stroke={line} strokeWidth="1" opacity="0.5" />
+      </>
+    ),
     short: (
       <>
         {/* waistband */}

@@ -129,9 +129,13 @@ export function ProductCard({
       </div>
 
       <div className="mt-3 flex flex-col gap-1.5">
-        <div className="flex items-baseline justify-between gap-3">
-          <h3 className="font-condensed text-[0.9375rem] leading-tight font-600 tracking-wide text-chalk-100 uppercase">
-            <button type="button" onClick={() => onOpen?.(product)} className="-my-1 cursor-pointer py-1 text-left uppercase hover:text-chalk-50">
+        <div className="flex items-start justify-between gap-3">
+          <h3 className="font-condensed line-clamp-2 min-w-0 text-[0.9375rem] leading-tight font-600 tracking-wide text-chalk-100 uppercase">
+            <button
+              type="button"
+              onClick={() => onOpen?.(product)}
+              className="-my-1 cursor-pointer py-1 text-left uppercase hover:text-chalk-50"
+            >
               {product.name}
             </button>
           </h3>
@@ -141,6 +145,7 @@ export function ProductCard({
         </div>
         {product.brand && <p className="type-eyebrow text-steel-400">{product.brand}</p>}
 
+        {product.colorsKnown && (
         <div className="mt-1 flex items-center gap-2" role="group" aria-label="Choose a color">
           {product.colorways.map((c, i) => (
             <button
@@ -159,6 +164,7 @@ export function ProductCard({
             />
           ))}
         </div>
+        )}
 
         <ShipBadge product={product} className="mt-1" />
       </div>

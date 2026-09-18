@@ -138,6 +138,7 @@ export function ProductSheet({
               <ShipBadge product={product} className="mt-2" />
 
               {/* colour */}
+              {product.colorsKnown && (
               <div className="mt-6">
                 <p className="type-label mb-2.5 text-[0.6875rem] text-steel-400">
                   Color · <span className="text-chalk-100">{colorway.name}</span>
@@ -161,6 +162,7 @@ export function ProductSheet({
                   ))}
                 </div>
               </div>
+              )}
 
               {/* size */}
               {needsSize && (
@@ -194,8 +196,8 @@ export function ProductSheet({
                     ))}
                   </div>
                   <p className="mt-2 text-xs text-steel-500">
-                    Sizes shown are the standard run. Availability is confirmed on the BSN product
-                    page.
+                    Sizes shown are the standard run. Real sizes, colours and stock are confirmed on
+                    the BSN product page.
                   </p>
                 </div>
               )}

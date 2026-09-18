@@ -12,7 +12,19 @@ import { CATALOG_SOURCE, CATALOG_STORE_URL, generatedProducts } from './products
 export { CATALOG_SOURCE, CATALOG_STORE_URL };
 export const CATALOG_IS_PLACEHOLDER = CATALOG_SOURCE === 'placeholder';
 
-export type GarmentType = 'hoodie' | 'tee' | 'crew' | 'jacket' | 'cap' | 'longsleeve' | 'short';
+export type GarmentType =
+  | 'hoodie'
+  | 'tee'
+  | 'crew'
+  | 'jacket'
+  | 'cap'
+  | 'longsleeve'
+  | 'short'
+  | 'polo'
+  | 'pant'
+  | 'beanie'
+  | 'bag'
+  | 'accessory';
 
 /** Fulfillment is only asserted when BSN actually stated it. */
 export type Fulfillment = 'stock' | 'made-to-order' | 'unknown';
@@ -36,7 +48,12 @@ export type RawProduct = {
   bsnUrl?: string | null;
 };
 
-export type Product = Omit<RawProduct, 'colorNames'> & { colorways: Colorway[] };
+export type Product = Omit<RawProduct, 'colorNames'> & {
+  colorways: Colorway[];
+  /** False when BSN gave us no colours and we're only using palette defaults
+      to draw a flat — the UI must not imply those colourways exist. */
+  colorsKnown: boolean;
+};
 
 /* ---------- colour vocabulary ----------
    BSN lists colours as words. This maps those words onto the Kennett palette
@@ -68,6 +85,7 @@ const toColorway = (name: string): Colorway => {
 export const products: Product[] = generatedProducts.map(({ colorNames, ...p }) => ({
   ...p,
   colorways: colorNames?.length ? colorNames.map(toColorway) : DEFAULT_COLORWAYS,
+  colorsKnown: Boolean(colorNames?.length),
 }));
 
 export const getProduct = (id: string) => products.find((p) => p.id === id);
@@ -77,21 +95,23 @@ export const lockerCategories = [
   { id: 'all', label: 'All' },
   { id: 'hoodies', label: 'Hoodies' },
   { id: 'tees', label: 'Tees' },
-  { id: 'game-day', label: 'Game Day' },
+  { id: 'outerwear', label: 'Jackets' },
   { id: 'athletic', label: 'Athletic' },
   { id: 'hats', label: 'Hats' },
+  { id: 'women', label: 'Women' },
   { id: 'kids', label: 'Kids' },
+  { id: 'accessories', label: 'Accessories' },
 ] as const;
 
 export const moments = [
-  { id: 'game-day', label: 'Game Day', note: 'Wear it Friday' },
   { id: 'new-drop', label: 'New Drop', note: 'Just landed' },
   { id: 'best-sellers', label: 'Best Sellers', note: 'Most worn' },
   { id: 'under-35', label: 'Under $35', note: 'Easy yes' },
   { id: 'premium', label: 'Premium', note: 'The good stuff' },
+  { id: 'hoodies', label: 'Hoodies', note: 'Cold bleachers' },
   { id: 'athletic', label: 'Athletic', note: 'Train in it' },
   { id: 'kids', label: 'Kids', note: 'Little Demons' },
-  { id: 'alumni', label: 'Alumni', note: 'Once a Demon' },
+  { id: 'accessories', label: 'Accessories', note: 'Bags & more' },
 ];
 
 /* ---------- Game Day Fits, as rules rather than fixed SKUs ----------
@@ -114,7 +134,7 @@ export const fits: FitRule[] = [
     name: 'Friday Night Lights',
     tagline: 'Cold bleachers. Loud section.',
     accent: '#1b4ac6',
-    wants: ['hoodie', 'cap', 'short'],
+    wants: ['hoodie', 'cap', 'pant'],
     prefer: ['game-day', 'best-sellers'],
   },
   {
@@ -122,7 +142,7 @@ export const fits: FitRule[] = [
     name: 'Student Section',
     tagline: 'Front row, full voice.',
     accent: '#2f62e0',
-    wants: ['longsleeve', 'cap'],
+    wants: ['longsleeve', 'cap', 'short'],
     prefer: ['game-day', 'under-35'],
   },
   {
@@ -130,7 +150,7 @@ export const fits: FitRule[] = [
     name: 'Cold Game',
     tagline: 'November on the sideline.',
     accent: '#001854',
-    wants: ['jacket', 'crew', 'cap'],
+    wants: ['jacket', 'crew', 'beanie'],
     prefer: ['game-day', 'premium'],
   },
   {
@@ -138,7 +158,7 @@ export const fits: FitRule[] = [
     name: 'Everyday Demon',
     tagline: 'Hallways, not headlines.',
     accent: '#0d3a9e',
-    wants: ['tee', 'hoodie'],
+    wants: ['tee', 'hoodie', 'bag'],
     prefer: ['everyday'],
   },
 ];
@@ -158,9 +178,16 @@ export function resolveFit(fit: FitRule): Product[] {
   return picked;
 }
 
-export const brands = Array.from(
-  new Set(products.map((p) => p.brand).filter(Boolean) as string[]),
-).slice(0, 8);
+/* Brands, ordered by how much of the catalog each one actually carries. */
+export const brands = Object.entries(
+  products.reduce<Record<string, number>>((acc, p) => {
+    if (p.brand) acc[p.brand] = (acc[p.brand] ?? 0) + 1;
+    return acc;
+  }, {}),
+)
+  .sort((a, b) => b[1] - a[1])
+  .slice(0, 10)
+  .map(([name]) => name.toUpperCase());
 
 export const marks = [
   { id: 'block-k', label: 'Block K' },
